@@ -11,12 +11,22 @@
 #include <stdbool.h>
 
 SDL_Point pathOne[] = {
-    {50, 50}, //start point
-    {300, 50},
-    {300, 500},
-    {800, 500},
-    {800, 800} //end point
+    {360, -500},   // Start - vstup z vrchu obrazovky
+    {360, -100}, // První zatáčka dolů
+    {360, 120}, // Zatáčka doleva
+    {520, 120}, // Dolů
+    {520, 530}, // Zatáčka doprava
+    {350, 530}, // Dolů
+    {350, 670}, // Zatáčka doleva
+    {530, 670}, // Dolů
+    {530, 720}, // Zatáčka doprava
+    {550, 720},
+    {580, 720},
+    {580, 800},
+    {770, 800},
+    {770, 950}  // Konec - výstup z obrazovky
 };
+
 
 int pathLengthOne = sizeof(pathOne) / sizeof(pathOne[0]);//length of the path
 
@@ -63,7 +73,7 @@ char keyPressed(SDL_KeyboardEvent key){
  
 int main( int argc, char* args[] )
 {
-    
+    double last = SDL_GetPerformanceCounter();
     int windowWidth = 1004, windowHeight = 870;
     if(SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
         printf("Error initialazing: %s\n", SDL_GetError());
@@ -73,8 +83,8 @@ int main( int argc, char* args[] )
     SDL_Renderer* renderer  = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     int run = 1;
     SDL_Event event;
+    Enemy *enemyTest = NULL;
     //** promena pro deltaTime
-    double last = SDL_GetPerformanceCounter();
     //**
     //
     //
@@ -84,7 +94,9 @@ int main( int argc, char* args[] )
     //
     //
     while(run) {
-        double now = SDL_GetPerformanceCounter();//druha promena pro deltaTime
+        double now = SDL_GetPerformanceCounter(); // Aktuální čas
+        double elapsed = deltaTime(now, last);    // Výpočet deltaTime
+        last = now;  
         SDL_RenderClear(renderer);
         SDL_Texture* backgroundImage = IMG_LoadTexture(renderer, "../../src/Assets/backgroundVersTwo.png");//nacitani background obrazku
         //rect for background image
@@ -102,29 +114,24 @@ int main( int argc, char* args[] )
                 case SDL_QUIT:
                     run = 0;
                     break;
-                    
-                case SDL_KEYDOWN:
-                    //keyDown = keyPressed(event.key);
-                    break;
-                    
                 default:
                     break;
             }
         }
         
         //spawn enemy
-        bool spawned = true;
-        Enemy *enemyTest = NULL;
+        static bool spawned = true;
         if(spawned){
-            enemyTest = spawnEnemy(renderer, pathOne, pathLengthOne, "../../src/Assets/characterMage.png");
+            enemyTest = spawnEnemy(renderer, pathOne, pathLengthOne, "../../src/Assets/characterEnemyGoblin.png");
             spawned = false;
+            renderEnemy(renderer, enemyTest);
         }
-        moveEnemy(enemyTest, deltaTime(now, last));
+        moveEnemy(enemyTest, 50 * elapsed);
         renderEnemy(renderer, enemyTest);
-        last = now;
         //-----------------render------------
         SDL_RenderPresent(renderer);
         //---------------------------------
+
     }
     SDL_Quit();
 

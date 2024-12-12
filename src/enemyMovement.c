@@ -45,8 +45,8 @@ void moveEnemy(Enemy *enemy, double deltaTime) {
     }
 
     SDL_Point target = enemy->path[enemy->pathIndex + 1];
-    int dx = target.x - enemy->x;
-    int dy = target.y - enemy->y;
+    double dx = target.x - enemy->x;
+    double dy = target.y - enemy->y;
     float distance = sqrt(dx * dx + dy * dy);
     float step = enemy->speed * deltaTime;
 
@@ -57,9 +57,13 @@ void moveEnemy(Enemy *enemy, double deltaTime) {
         enemy->pathIndex++;
     } else if (distance > 0) { // Ensure distance is not zero
         // moving enemy
-        enemy->x += step * dx / distance;
-        enemy->y += step * dy / distance;
+        enemy->x += (int)round(step * dx / distance);
+        enemy->y += (int)round(step * dy / distance);
     }
+
+    printf("Enemy Position: (%d, %d), Target: (%d, %d), PathIndex: %d\n",
+       enemy->x, enemy->y, target.x, target.y, enemy->pathIndex);
+
 }
 
 
@@ -74,6 +78,6 @@ void renderEnemy(SDL_Renderer *renderer, Enemy *enemy) {
         return;
     }
 
-    SDL_Rect dstRect = {enemy->x, enemy->y, 32, 32}; // numbers for adjusting enemy size
+    SDL_Rect dstRect = {(int)enemy->x - 35, (int)enemy->y - 35, 70, 70}; // numbers for adjusting enemy size
     SDL_RenderCopy(renderer, enemy->image, NULL, &dstRect);
 }
