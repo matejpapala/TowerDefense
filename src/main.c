@@ -12,18 +12,18 @@
 
 SDL_Point pathOne[] = {
     {360, -500},   // Start - vstup z vrchu obrazovky
-    {360, -100}, // První zatáčka dolů
-    {360, 120}, // Zatáčka doleva
-    {520, 120}, // Dolů
-    {520, 530}, // Zatáčka doprava
-    {350, 530}, // Dolů
-    {350, 670}, // Zatáčka doleva
-    {530, 670}, // Dolů
-    {530, 720}, // Zatáčka doprava
-    {550, 720},
-    {580, 720},
-    {580, 800},
-    {770, 800},
+    {360, -100}, 
+    {360, 120}, 
+    {520, 120}, 
+    {520, 520}, 
+    {350, 520}, 
+    {350, 650}, 
+    {530, 650},
+    {530, 690},
+    {550, 690},
+    {580, 690},
+    {580, 770},
+    {770, 770},
     {770, 950}  // Konec - výstup z obrazovky
 };
 
@@ -31,34 +31,50 @@ SDL_Point pathOne[] = {
 int pathLengthOne = sizeof(pathOne) / sizeof(pathOne[0]);//length of the path
 
 SDL_Point pathTwo[] = {
-    {50, 50},
-    {150, 50},
-    {150, 150},
-    {300, 150},
-    {300, 300}
+    {360, -500},   // Start - vstup z vrchu obrazovky
+    {360, -100}, 
+    {360, 120}, 
+    {520, 120},
+    {520, 280},
+    {360, 280},
+    {360, 350},
+    {150, 350},
+    {150, 520},
+    {350, 520},
+    {350, 650}, 
+    {530, 650},
+    {530, 690},
+    {550, 690},
+    {580, 690},
+    {580, 770},
+    {770, 770},
+    {770, 950}  // Konec - výstup z obrazovky
 };
 
 int pathLengthTwo = sizeof(pathTwo) / sizeof(pathTwo[0]);
 
 SDL_Point pathThree[] = {
-    {50, 50},
-    {150, 50},
-    {150, 150},
-    {300, 150},
-    {300, 300}
+    {360, -500},   // Start - vstup z vrchu obrazovky
+    {360, -100}, 
+    {360, 120}, 
+    {520, 120},
+    {520, 280},
+    {360, 280},
+    {360, 350},
+    {150, 350},
+    {150, 520},
+    {685, 520},
+    {685, 570},
+    {640, 620},
+    {640, 690},
+    {580, 690},
+    {580, 770},
+    {770, 770},
+    {770, 950}  // Konec - výstup z obrazovky
 };
 
 int pathLengthThree = sizeof(pathThree) / sizeof(pathThree[0]);
 
-SDL_Point pathFour[] = {
-    {50, 50},
-    {150, 50},
-    {150, 150},
-    {300, 150},
-    {300, 300}
-};
-
-int pathLengthFour = sizeof(pathFour) / sizeof(pathFour[0]);
 
 double deltaTime(double now, double last){
     return ((now - last) / (double)SDL_GetPerformanceFrequency());
@@ -122,7 +138,7 @@ int main( int argc, char* args[] )
         //spawn enemy
         static bool spawned = true;
         if(spawned){
-            enemyTest = spawnEnemy(renderer, pathOne, pathLengthOne, "../../src/Assets/characterEnemyGoblin.png");
+            enemyTest = spawnEnemy(renderer, pathThree, pathLengthThree, "../../src/Assets/characterEnemyGoblin.png");
             spawned = false;
             renderEnemy(renderer, enemyTest);
         }
