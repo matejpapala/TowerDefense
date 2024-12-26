@@ -8,6 +8,7 @@
 #include <SDL_image.h>
 #include <stdio.h>
 #include "enemyMovement.h"
+#include "enemyManager.h"
 #include <stdbool.h>
 
 SDL_Point pathOne[] = {
@@ -98,8 +99,11 @@ int main( int argc, char* args[] )
     SDL_Window* window = SDL_CreateWindow("Placeholder name", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer  = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     int run = 1;
+    int wave = 1;
+    double elapsedTime = 0;
     SDL_Event event;
-    Enemy *enemyTest = NULL;
+    //Enemy *enemyTest = NULL;
+    EnemyManager* enemyManager = createEnemyManager(50);
     //** promena pro deltaTime
     //**
     //
@@ -110,45 +114,39 @@ int main( int argc, char* args[] )
     //
     //
     while(run) {
-        double now = SDL_GetPerformanceCounter(); // Aktuální čas
-        double elapsed = deltaTime(now, last);    // Výpočet deltaTime
-        last = now;  
+        double now = SDL_GetPerformanceCounter();
+        double elapsed = deltaTime(now, last);
+        last = now;
+        elapsedTime += elapsed * 1000;   
+
         SDL_RenderClear(renderer);
-        SDL_Texture* backgroundImage = IMG_LoadTexture(renderer, "../../src/Assets/backgroundVersTwo.png");//nacitani background obrazku
-        //rect for background image
-        SDL_Rect backgroundRect = {
-            .x = 0,
-            .y = 0,
-            .w = windowWidth,
-            .h = windowHeight
-        };
-        SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+        SDL_Texture* backgroundImage = IMG_LoadTexture(renderer, "../../src/Assets/backgroundVersTwo.png");
+        SDL_Rect backgroundRect = {0, 0, windowWidth, windowHeight};
         SDL_RenderCopy(renderer, backgroundImage, NULL, &backgroundRect);
-        //event catcher
-        while(SDL_PollEvent(&event)){
-            switch (event.type) {
-                case SDL_QUIT:
-                    run = 0;
-                    break;
-                default:
-                    break;
+
+        spawnEnemies(enemyManager, renderer, pathOne, pathLengthOne, wave, elapsedTime);
+        updateEnemies(enemyManager, elapsed);
+        renderEnemies(enemyManager, renderer);
+
+        SDL_RenderPresent(renderer);
+
+        // end of waves
+        if (!enemyManager->waveActive && enemyManager->activeEnemies == 0 && elapsedTime > 10000) {
+            wave++;     
+            enemyManager->waveActive = true;
+            enemyManager->nextSpawnTime = 0;
+            elapsedTime = 0; 
+        }
+
+        // event catcher
+        while(SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                run = 0;
             }
         }
-        
-        //spawn enemy
-        static bool spawned = true;
-        if(spawned){
-            enemyTest = spawnEnemy(renderer, pathThree, pathLengthThree, "../../src/Assets/characterEnemyGoblin.png");
-            spawned = false;
-            renderEnemy(renderer, enemyTest);
-        }
-        moveEnemy(enemyTest, 50 * elapsed);
-        renderEnemy(renderer, enemyTest);
-        //-----------------render------------
-        SDL_RenderPresent(renderer);
-        //---------------------------------
-
     }
+
+    freeEnemyManager(enemyManager);
     SDL_Quit();
 
     return 0;

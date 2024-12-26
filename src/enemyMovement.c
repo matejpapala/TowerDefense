@@ -12,6 +12,7 @@ Enemy* spawnEnemy(SDL_Renderer *renderer, SDL_Point *path, int pathLength, const
     enemy->x = path[0].x;
     enemy->y = path[0].y;
     enemy->speed = 2;
+    enemy->hp = 10;
     enemy->pathIndex = 0;
     enemy->path = path;
     enemy->pathLength = pathLength;

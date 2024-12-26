@@ -12,10 +12,12 @@
 #include <SDL_image.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef struct {
     int x, y;
     int speed;
+    int hp;
     SDL_Texture *image;
     int pathIndex;//index of the point he goes to
     SDL_Point *path;//array of points
