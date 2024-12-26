@@ -32,7 +32,7 @@ void spawnEnemies(EnemyManager* manager, SDL_Renderer* renderer, SDL_Point* path
     int totalEnemiesToSpawn = 5 + wave * 2;
     if (manager->waveActive && manager->activeEnemies <= totalEnemiesToSpawn && elapsedTime >= manager->nextSpawnTime) {
         // difficulty
-        int enemyHP = 10 + (wave * 5);
+        int enemyHP = 100 + (wave * 5);
         int enemySpeed = 2 + (wave * 0.3);
         const char* enemyImagePath = "../../src/Assets/characterEnemyGoblin.png";
 

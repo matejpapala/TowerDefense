@@ -13,9 +13,10 @@
 #include <stdbool.h>
 
 SDL_Rect turretSpots[] = {
-    {200, 200, 50, 50}, 
-    {400, 300, 50, 50}, 
-    {600, 500, 50, 50}, 
+    {400, 200, 25, 25}, 
+    {200, 440, 25, 25}, 
+    {550, 450, 25, 25}, 
+    {650, 710, 25, 25}
 };
 int numClickableSpots = sizeof(turretSpots) / sizeof(turretSpots[0]);
 
@@ -132,6 +133,7 @@ int main( int argc, char* args[] )
 
         SDL_RenderClear(renderer);
         SDL_Texture* backgroundImage = IMG_LoadTexture(renderer, "../../src/Assets/backgroundVersTwo.png");
+        SDL_Texture* turretTexture = IMG_LoadTexture(renderer, "../../src/Assets/towerTowerDefense.png");
         SDL_Rect backgroundRect = {0, 0, windowWidth, windowHeight};
         SDL_RenderCopy(renderer, backgroundImage, NULL, &backgroundRect);
 
@@ -145,12 +147,12 @@ int main( int argc, char* args[] )
         }
 
         for (int i = 0; i < numTurrets; i++) {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); 
-            SDL_RenderFillRect(renderer, &turrets[i]);
+            SDL_Rect dstRect = {turrets[i].x - 60, turrets[i].y - 75, 150, 150};
+            SDL_RenderCopy(renderer, turretTexture, NULL, &dstRect);
         }
 
 
-
+        //spawn a update enemy
         spawnEnemies(enemyManager, renderer, pathOne, pathLengthOne, wave, elapsedTime);
         updateEnemies(enemyManager, elapsed);
         renderEnemies(enemyManager, renderer);
@@ -158,10 +160,10 @@ int main( int argc, char* args[] )
         for (int i = 0; i < numTurrets; i++) {
             Turret turret = {
                 .position = turrets[i],
-                .range = 200,             // Example range
-                .damage = 5,             // Example damage
-                .shootCooldown = 1000,    // 1 second cooldown
-                .lastShotTime = 0,        // Initialize last shot time
+                .range = 150,            
+                .damage = 1,   
+                .shootCooldown = 1000, 
+                .lastShotTime = 0,
             };
 
             shootEnemies(&turret, enemyManager, renderer, elapsedTime);
@@ -185,7 +187,6 @@ int main( int argc, char* args[] )
                     run = 0;
                     break;
                 case SDL_MOUSEBUTTONDOWN: {
-                    // Enclose this block with curly braces
                     int x = event.button.x;
                     int y = event.button.y;
                     for (int i = 0; i < numClickableSpots; i++) {
@@ -203,7 +204,6 @@ int main( int argc, char* args[] )
             }
         }
     }
-
     freeEnemyManager(enemyManager);
     SDL_Quit();
 

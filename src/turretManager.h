@@ -5,11 +5,11 @@
 #include "enemyManager.h"
 
 typedef struct {
-    SDL_Rect position;  // Position and size of the turret
-    int range;          // Range of the turret
-    int damage;         // Damage dealt per shot
-    double shootCooldown; // Time between shots in milliseconds
-    double lastShotTime;  // Time when the turret last shot
+    SDL_Rect position; 
+    int range; 
+    int damage; 
+    double shootCooldown;
+    double lastShotTime; 
 } Turret;
 
 void shootEnemies(Turret* turret, EnemyManager* enemyManager, SDL_Renderer* renderer, double elapsedTime);
