@@ -9,10 +9,18 @@
 #include <stdio.h>
 #include "enemyMovement.h"
 #include "enemyManager.h"
+#include "turretManager.h"
 #include <stdbool.h>
 
+SDL_Rect turretSpots[] = {
+    {200, 200, 50, 50}, 
+    {400, 300, 50, 50}, 
+    {600, 500, 50, 50}, 
+};
+int numClickableSpots = sizeof(turretSpots) / sizeof(turretSpots[0]);
+
 SDL_Point pathOne[] = {
-    {360, -500},   // Start - vstup z vrchu obrazovky
+    {360, -500},   // Start
     {360, -100}, 
     {360, 120}, 
     {520, 120}, 
@@ -25,14 +33,14 @@ SDL_Point pathOne[] = {
     {580, 690},
     {580, 770},
     {770, 770},
-    {770, 950}  // Konec - výstup z obrazovky
+    {770, 950}  // Konec 
 };
 
 
 int pathLengthOne = sizeof(pathOne) / sizeof(pathOne[0]);//length of the path
 
 SDL_Point pathTwo[] = {
-    {360, -500},   // Start - vstup z vrchu obrazovky
+    {360, -500},   // Start 
     {360, -100}, 
     {360, 120}, 
     {520, 120},
@@ -49,13 +57,13 @@ SDL_Point pathTwo[] = {
     {580, 690},
     {580, 770},
     {770, 770},
-    {770, 950}  // Konec - výstup z obrazovky
+    {770, 950}  // Konec 
 };
 
 int pathLengthTwo = sizeof(pathTwo) / sizeof(pathTwo[0]);
 
 SDL_Point pathThree[] = {
-    {360, -500},   // Start - vstup z vrchu obrazovky
+    {360, -500},   // Start
     {360, -100}, 
     {360, 120}, 
     {520, 120},
@@ -71,7 +79,7 @@ SDL_Point pathThree[] = {
     {580, 690},
     {580, 770},
     {770, 770},
-    {770, 950}  // Konec - výstup z obrazovky
+    {770, 950}  // Konec
 };
 
 int pathLengthThree = sizeof(pathThree) / sizeof(pathThree[0]);
@@ -88,6 +96,7 @@ char keyPressed(SDL_KeyboardEvent key){
     return 0;
 }
  
+
 int main( int argc, char* args[] )
 {
     double last = SDL_GetPerformanceCounter();
@@ -104,6 +113,8 @@ int main( int argc, char* args[] )
     SDL_Event event;
     //Enemy *enemyTest = NULL;
     EnemyManager* enemyManager = createEnemyManager(50);
+    SDL_Rect turrets[5];
+    int numTurrets = 0;
     //** promena pro deltaTime
     //**
     //
@@ -124,9 +135,38 @@ int main( int argc, char* args[] )
         SDL_Rect backgroundRect = {0, 0, windowWidth, windowHeight};
         SDL_RenderCopy(renderer, backgroundImage, NULL, &backgroundRect);
 
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+        for (int i = 0; i < numClickableSpots; i++) {
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128); 
+            SDL_RenderFillRect(renderer, &turretSpots[i]);
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); 
+            SDL_RenderDrawRect(renderer, &turretSpots[i]);
+        }
+
+        for (int i = 0; i < numTurrets; i++) {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); 
+            SDL_RenderFillRect(renderer, &turrets[i]);
+        }
+
+
+
         spawnEnemies(enemyManager, renderer, pathOne, pathLengthOne, wave, elapsedTime);
         updateEnemies(enemyManager, elapsed);
         renderEnemies(enemyManager, renderer);
+
+        for (int i = 0; i < numTurrets; i++) {
+            Turret turret = {
+                .position = turrets[i],
+                .range = 200,             // Example range
+                .damage = 5,             // Example damage
+                .shootCooldown = 1000,    // 1 second cooldown
+                .lastShotTime = 0,        // Initialize last shot time
+            };
+
+            shootEnemies(&turret, enemyManager, renderer, elapsedTime);
+        }
+
 
         SDL_RenderPresent(renderer);
 
@@ -139,9 +179,27 @@ int main( int argc, char* args[] )
         }
 
         // event catcher
-        while(SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                run = 0;
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT:
+                    run = 0;
+                    break;
+                case SDL_MOUSEBUTTONDOWN: {
+                    // Enclose this block with curly braces
+                    int x = event.button.x;
+                    int y = event.button.y;
+                    for (int i = 0; i < numClickableSpots; i++) {
+                        if (SDL_PointInRect(&(SDL_Point){x, y}, &turretSpots[i])) {
+                            if (numTurrets < 5) {
+                                turrets[numTurrets++] = turretSpots[i];
+                                printf("Turret placed at (%d, %d)\n", turretSpots[i].x, turretSpots[i].y);
+                            }
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
             }
         }
     }
