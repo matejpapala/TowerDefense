@@ -133,6 +133,21 @@ void renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_RenderPresent(renderer);
 }
 
+void renderGameOver(SDL_Renderer* renderer, TTF_Font* font) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); 
+    SDL_RenderClear(renderer);
+
+    SDL_Color red = {255, 0, 0};
+    SDL_Surface* gameOverSurface = TTF_RenderText_Blended(font, "GAME OVER", red);
+    SDL_Texture* gameOverTexture = SDL_CreateTextureFromSurface(renderer, gameOverSurface);
+    SDL_Rect gameOverRect = {200, 300, 600, 200};
+    SDL_RenderCopy(renderer, gameOverTexture, NULL, &gameOverRect);
+
+    SDL_FreeSurface(gameOverSurface);
+    SDL_DestroyTexture(gameOverTexture);
+
+    SDL_RenderPresent(renderer);
+}
 
 
 
@@ -141,6 +156,10 @@ int turretCost = 50;
 TextEffect textEffects[10];
 int numTextEffects = 0;
 bool inMenu = true;
+bool gameOver = false;
+double gameOverStartTime = 0;
+
+
 
 int main( int argc, char* args[] )
 {
@@ -165,6 +184,7 @@ int main( int argc, char* args[] )
     SDL_Renderer* renderer  = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     int run = 1;
     int wave = 1;
+    int playerHealth = 100;
     double elapsedTime = 0;
     SDL_Event event;
     //Enemy *enemyTest = NULL;
@@ -201,12 +221,23 @@ int main( int argc, char* args[] )
             }
             renderMenu(renderer, font);
         } else {
-                    double now = SDL_GetPerformanceCounter();
+
+            if(gameOver){
+                renderGameOver(renderer, font);
+                double now = SDL_GetPerformanceCounter();
+                if (((now - gameOverStartTime) / SDL_GetPerformanceFrequency()) > 3.0) {
+                    run = 0; 
+                }
+                continue;
+            }
+
+        double now = SDL_GetPerformanceCounter();
         double elapsed = deltaTime(now, last);
         last = now;
         elapsedTime += elapsed * 1000;   
 
         SDL_RenderClear(renderer);
+        SDL_Texture* heartTexture = IMG_LoadTexture(renderer, "../../src/Assets/playerHealthHeart.png");
         SDL_Texture* backgroundImage = IMG_LoadTexture(renderer, "../../src/Assets/backgroundVersTwo.png");
         SDL_Texture* turretTexture = IMG_LoadTexture(renderer, "../../src/Assets/towerTowerDefense.png");
         SDL_Rect backgroundRect = {0, 0, windowWidth, windowHeight};
@@ -214,6 +245,23 @@ int main( int argc, char* args[] )
 
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
+
+        SDL_Color white = {255, 255, 255};
+        char hpText[20];
+        sprintf(hpText, "%d", playerHealth);
+
+        SDL_Surface* hpSurface = TTF_RenderText_Blended(font, hpText, white);
+        SDL_Texture* hpTexture = SDL_CreateTextureFromSurface(renderer, hpSurface);
+        SDL_Rect hpRect = {windowWidth - 150, 10, hpSurface->w, hpSurface->h}; 
+        SDL_RenderCopy(renderer, hpTexture, NULL, &hpRect);
+
+        SDL_Rect heartRect = {windowWidth - 100, 10, 40, 40}; 
+        SDL_RenderCopy(renderer, heartTexture, NULL, &heartRect);
+
+        SDL_FreeSurface(hpSurface);
+        SDL_DestroyTexture(hpTexture);
+
+        
         for (int i = 0; i < numClickableSpots; i++) {
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128); 
             SDL_RenderFillRect(renderer, &turretSpots[i]);
@@ -229,12 +277,11 @@ int main( int argc, char* args[] )
 
         //spawn a update enemy
         spawnEnemies(enemyManager, renderer, pathOne, pathLengthOne, wave, elapsedTime);
-        updateEnemies(enemyManager, elapsed, &playerMoney, elapsedTime);
+        updateEnemies(enemyManager, elapsed, &playerMoney, elapsedTime, &playerHealth);
         renderEnemies(enemyManager, renderer);
 
 
         //render money
-        SDL_Color white = {255, 255, 255, 255};
         char moneyText[20];
         sprintf(moneyText, "Money: %d", playerMoney);
         SDL_Surface* moneySurface = TTF_RenderText_Blended(font, moneyText, white);
@@ -308,6 +355,10 @@ int main( int argc, char* args[] )
                 default:
                     break;
             }
+        }
+            if (playerHealth <= 0 && !gameOver) {
+            gameOver = true;
+            gameOverStartTime = SDL_GetPerformanceCounter(); 
         }
         }
 

@@ -56,7 +56,7 @@ void spawnEnemies(EnemyManager* manager, SDL_Renderer* renderer, SDL_Point* path
 }
 
 
-void updateEnemies(EnemyManager* manager, double deltaTime, int* playerMoney, double elapsedTime) {
+void updateEnemies(EnemyManager* manager, double deltaTime, int* playerMoney, double elapsedTime, int* playerHealth) {
     for (int i = 0; i < manager->activeEnemies; i++) {
         Enemy* enemy = manager->enemies[i];
         if (enemy != NULL) {
@@ -67,6 +67,7 @@ void updateEnemies(EnemyManager* manager, double deltaTime, int* playerMoney, do
                 SDL_DestroyTexture(enemy->image);
                 free(enemy);
                 manager->enemies[i] = NULL;
+                *playerHealth -= 10;
                 continue;
             }
         }
