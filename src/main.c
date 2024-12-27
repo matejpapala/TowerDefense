@@ -98,11 +98,49 @@ char keyPressed(SDL_KeyboardEvent key){
     }
     return 0;
 }
+
+SDL_Rect startButton = {400, 300, 200, 80}; 
+SDL_Rect exitButton = {400, 400, 200, 80};
+
+
  
+void renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
+    SDL_Color white = {255, 255, 255};
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); 
+    SDL_RenderFillRect(renderer, &startButton);
+    SDL_Surface* startTextSurface = TTF_RenderText_Blended(font, "Start Game", white);
+    SDL_Texture* startTextTexture = SDL_CreateTextureFromSurface(renderer, startTextSurface);
+    SDL_Rect startTextRect = {startButton.x + 20, startButton.y + 20, startTextSurface->w, startTextSurface->h};
+    SDL_RenderCopy(renderer, startTextTexture, NULL, &startTextRect);
+
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); 
+    SDL_RenderFillRect(renderer, &exitButton);
+    SDL_Surface* exitTextSurface = TTF_RenderText_Blended(font, "Exit", white);
+    SDL_Texture* exitTextTexture = SDL_CreateTextureFromSurface(renderer, exitTextSurface);
+    SDL_Rect exitTextRect = {exitButton.x + 50, exitButton.y + 20, exitTextSurface->w, exitTextSurface->h};
+    SDL_RenderCopy(renderer, exitTextTexture, NULL, &exitTextRect);
+
+    SDL_FreeSurface(startTextSurface);
+    SDL_DestroyTexture(startTextTexture);
+    SDL_FreeSurface(exitTextSurface);
+    SDL_DestroyTexture(exitTextTexture);
+
+    SDL_RenderPresent(renderer);
+}
+
+
+
+
 int playerMoney = 100;
 int turretCost = 50;
 TextEffect textEffects[10];
 int numTextEffects = 0;
+bool inMenu = true;
 
 int main( int argc, char* args[] )
 {
@@ -117,7 +155,7 @@ int main( int argc, char* args[] )
         printf("Error initializing SDL_ttf: %s\n", TTF_GetError());
         return 1;
     }
-    TTF_Font* font = TTF_OpenFont("../../src/Assets/Konimasa-yO9m.ttf", 24);
+    TTF_Font* font = TTF_OpenFont("../../src/Assets/PTF-NORDIC-Rnd.ttf", 24);
     if (!font) {
         printf("Error loading font: %s\n", TTF_GetError());
         return 1;
@@ -143,7 +181,27 @@ int main( int argc, char* args[] )
     //
     //
     while(run) {
-        double now = SDL_GetPerformanceCounter();
+        if (inMenu) {
+            while (SDL_PollEvent(&event)) {
+                if (event.type == SDL_QUIT) {
+                    run = 0;
+                } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                    int x = event.button.x;
+                    int y = event.button.y;
+
+                    
+                    if (SDL_PointInRect(&(SDL_Point){x, y}, &startButton)) {
+                        inMenu = false;
+                    }
+
+                    if (SDL_PointInRect(&(SDL_Point){x, y}, &exitButton)) {
+                        run = 0;
+                    }
+                }
+            }
+            renderMenu(renderer, font);
+        } else {
+                    double now = SDL_GetPerformanceCounter();
         double elapsed = deltaTime(now, last);
         last = now;
         elapsedTime += elapsed * 1000;   
@@ -239,12 +297,9 @@ int main( int argc, char* args[] )
                     int y = event.button.y;
                     for (int i = 0; i < numClickableSpots; i++) {
                         if (SDL_PointInRect(&(SDL_Point){x, y}, &turretSpots[i])) {
-                            if (numTurrets < 5 && playerMoney >= turretCost) { // Check money
+                            if (numTurrets < 5 && playerMoney >= turretCost) {
                                 turrets[numTurrets++] = turretSpots[i];
-                                playerMoney -= turretCost; // Deduct money
-                                printf("Turret placed at (%d, %d). Remaining money: %d\n", turretSpots[i].x, turretSpots[i].y, playerMoney);
-                            } else if (playerMoney < turretCost) {
-                                printf("Not enough money to place a turret!\n");
+                                playerMoney -= turretCost; 
                             }
                         }
                     }
@@ -254,6 +309,8 @@ int main( int argc, char* args[] )
                     break;
             }
         }
+        }
+
     }
     TTF_CloseFont(font);
     TTF_Quit();

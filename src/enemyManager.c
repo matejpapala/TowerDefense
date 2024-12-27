@@ -75,7 +75,7 @@ void updateEnemies(EnemyManager* manager, double deltaTime, int* playerMoney, do
             if (numTextEffects < 10) {
                 sprintf(textEffects[numTextEffects].text, "+10");
                 textEffects[numTextEffects].position = (SDL_Rect){enemy->x, enemy->y - 20, 30, 20};
-                textEffects[numTextEffects].color = (SDL_Color){0, 0, 0, 255}; 
+                textEffects[numTextEffects].color = (SDL_Color){255, 255, 255, 255}; 
                 textEffects[numTextEffects].startTime = elapsedTime;
                 textEffects[numTextEffects].duration = 1000; 
                 numTextEffects++;

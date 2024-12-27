@@ -19,7 +19,6 @@ void shootEnemies(Turret* turret, EnemyManager* enemyManager, SDL_Renderer* rend
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);  
                 SDL_RenderDrawLine(renderer, turret->position.x + 25, turret->position.y + 25, enemy->x, enemy->y);
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); 
-                printf("Turret shot enemy at (%d, %d), HP left: %d\n", enemy->x, enemy->y, enemy->hp);
                 break; 
             }
         }

@@ -56,15 +56,11 @@ void moveEnemy(Enemy *enemy, double deltaTime) {
         enemy->x = target.x;
         enemy->y = target.y;
         enemy->pathIndex++;
-    } else if (distance > 0) { // Ensure distance is not zero
+    } else if (distance > 0) {
         // moving enemy
         enemy->x += (int)round(step * dx / distance);
         enemy->y += (int)round(step * dy / distance);
     }
-
-    printf("Enemy Position: (%d, %d), Target: (%d, %d), PathIndex: %d\n",
-       enemy->x, enemy->y, target.x, target.y, enemy->pathIndex);
-
 }
 
 
