@@ -20,7 +20,7 @@ void freeEnemyManager(EnemyManager* manager);
 
 void spawnEnemies(EnemyManager* manager, SDL_Renderer* renderer, SDL_Point* path, int pathLength, int wave, double elapsedTime);
 
-void updateEnemies(EnemyManager* manager, double deltaTime);
+void updateEnemies(EnemyManager* manager, double deltaTime, int* playerMoney, double elapsedTime);
 
 void renderEnemies(EnemyManager* manager, SDL_Renderer* renderer);
 

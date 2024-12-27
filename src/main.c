@@ -6,10 +6,12 @@
 //
 #include <SDL2/SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <stdio.h>
 #include "enemyMovement.h"
 #include "enemyManager.h"
 #include "turretManager.h"
+#include "textEffects.h"
 #include <stdbool.h>
 
 SDL_Rect turretSpots[] = {
@@ -97,6 +99,10 @@ char keyPressed(SDL_KeyboardEvent key){
     return 0;
 }
  
+int playerMoney = 100;
+int turretCost = 50;
+TextEffect textEffects[10];
+int numTextEffects = 0;
 
 int main( int argc, char* args[] )
 {
@@ -106,6 +112,17 @@ int main( int argc, char* args[] )
         printf("Error initialazing: %s\n", SDL_GetError());
         return 1;
     }
+
+    if (TTF_Init() == -1) {
+        printf("Error initializing SDL_ttf: %s\n", TTF_GetError());
+        return 1;
+    }
+    TTF_Font* font = TTF_OpenFont("../../src/Assets/Konimasa-yO9m.ttf", 24);
+    if (!font) {
+        printf("Error loading font: %s\n", TTF_GetError());
+        return 1;
+    }
+
     SDL_Window* window = SDL_CreateWindow("Placeholder name", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer  = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     int run = 1;
@@ -154,8 +171,39 @@ int main( int argc, char* args[] )
 
         //spawn a update enemy
         spawnEnemies(enemyManager, renderer, pathOne, pathLengthOne, wave, elapsedTime);
-        updateEnemies(enemyManager, elapsed);
+        updateEnemies(enemyManager, elapsed, &playerMoney, elapsedTime);
         renderEnemies(enemyManager, renderer);
+
+
+        //render money
+        SDL_Color white = {255, 255, 255, 255};
+        char moneyText[20];
+        sprintf(moneyText, "Money: %d", playerMoney);
+        SDL_Surface* moneySurface = TTF_RenderText_Blended(font, moneyText, white);
+        SDL_Texture* moneyTexture = SDL_CreateTextureFromSurface(renderer, moneySurface);
+        SDL_Rect moneyRect = {10, 10, moneySurface->w, moneySurface->h};
+        SDL_RenderCopy(renderer, moneyTexture, NULL, &moneyRect);
+        SDL_FreeSurface(moneySurface);
+        SDL_DestroyTexture(moneyTexture);
+
+
+        for (int i = 0; i < numTextEffects; i++) {
+            if (elapsedTime - textEffects[i].startTime < textEffects[i].duration) {
+                SDL_Surface* effectSurface = TTF_RenderText_Blended(font, textEffects[i].text, textEffects[i].color);
+                SDL_Texture* effectTexture = SDL_CreateTextureFromSurface(renderer, effectSurface);
+                SDL_RenderCopy(renderer, effectTexture, NULL, &textEffects[i].position);
+                SDL_FreeSurface(effectSurface);
+                SDL_DestroyTexture(effectTexture);
+            } else {
+                // Remove expired text effect
+                for (int j = i; j < numTextEffects - 1; j++) {
+                    textEffects[j] = textEffects[j + 1];
+                }
+                numTextEffects--;
+                i--;
+            }
+        }
+
 
         for (int i = 0; i < numTurrets; i++) {
             Turret turret = {
@@ -191,9 +239,12 @@ int main( int argc, char* args[] )
                     int y = event.button.y;
                     for (int i = 0; i < numClickableSpots; i++) {
                         if (SDL_PointInRect(&(SDL_Point){x, y}, &turretSpots[i])) {
-                            if (numTurrets < 5) {
+                            if (numTurrets < 5 && playerMoney >= turretCost) { // Check money
                                 turrets[numTurrets++] = turretSpots[i];
-                                printf("Turret placed at (%d, %d)\n", turretSpots[i].x, turretSpots[i].y);
+                                playerMoney -= turretCost; // Deduct money
+                                printf("Turret placed at (%d, %d). Remaining money: %d\n", turretSpots[i].x, turretSpots[i].y, playerMoney);
+                            } else if (playerMoney < turretCost) {
+                                printf("Not enough money to place a turret!\n");
                             }
                         }
                     }
@@ -204,6 +255,8 @@ int main( int argc, char* args[] )
             }
         }
     }
+    TTF_CloseFont(font);
+    TTF_Quit();
     freeEnemyManager(enemyManager);
     SDL_Quit();
 

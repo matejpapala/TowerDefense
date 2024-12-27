@@ -1,7 +1,7 @@
 #include "enemyManager.h"
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include "textEffects.h"
 // manager init
 EnemyManager* createEnemyManager(int maxEnemies) {
     EnemyManager* manager = (EnemyManager*)malloc(sizeof(EnemyManager));
@@ -14,6 +14,7 @@ EnemyManager* createEnemyManager(int maxEnemies) {
     }
     return manager;
 }
+
 
 //freeing the manager
 void freeEnemyManager(EnemyManager* manager) {
@@ -55,7 +56,7 @@ void spawnEnemies(EnemyManager* manager, SDL_Renderer* renderer, SDL_Point* path
 }
 
 
-void updateEnemies(EnemyManager* manager, double deltaTime) {
+void updateEnemies(EnemyManager* manager, double deltaTime, int* playerMoney, double elapsedTime) {
     for (int i = 0; i < manager->activeEnemies; i++) {
         Enemy* enemy = manager->enemies[i];
         if (enemy != NULL) {
@@ -71,11 +72,22 @@ void updateEnemies(EnemyManager* manager, double deltaTime) {
         }
         //out of HP
         if (enemy->hp <= 0) {
+            if (numTextEffects < 10) {
+                sprintf(textEffects[numTextEffects].text, "+10");
+                textEffects[numTextEffects].position = (SDL_Rect){enemy->x, enemy->y - 20, 30, 20};
+                textEffects[numTextEffects].color = (SDL_Color){0, 0, 0, 255}; 
+                textEffects[numTextEffects].startTime = elapsedTime;
+                textEffects[numTextEffects].duration = 1000; 
+                numTextEffects++;
+            }
+
             SDL_DestroyTexture(enemy->image);
             free(enemy);
             manager->enemies[i] = NULL;
+            *playerMoney += 10;
             continue;
         }
+
     }
     
 
