@@ -40,7 +40,7 @@ void upgradeTurret(Turret* turret, int* playerMoney, SDL_Renderer* renderer) {
     if (turret->upgradeLevel < 2 && *playerMoney >= upgradeCost) {
         *playerMoney -= upgradeCost; 
         turret->upgradeLevel++;   
-        turret->damage += 5;  
+        turret->damage += 10;  
         turret->range += 50;   
         SDL_DestroyTexture(turret->texture);
         SDL_Surface* tempSurface = IMG_Load(upgradeTextures[turret->upgradeLevel]);

@@ -40,7 +40,7 @@ SDL_Point pathOne[] = {
 };
 
 
-int pathLengthOne = sizeof(pathOne) / sizeof(pathOne[0]);//length of the path
+int pathLengthOne = sizeof(pathOne) / sizeof(pathOne[0]);
 
 SDL_Point pathTwo[] = {
     {360, -500},   // Start 
@@ -90,13 +90,6 @@ int pathLengthThree = sizeof(pathThree) / sizeof(pathThree[0]);
 
 double deltaTime(double now, double last){
     return ((now - last) / (double)SDL_GetPerformanceFrequency());
-}
-
-char keyPressed(SDL_KeyboardEvent key){
-    if(key.keysym.scancode == SDL_SCANCODE_L) {
-        return 'l';
-    }
-    return 0;
 }
 
 SDL_Rect startButton = {400, 300, 200, 80}; 
@@ -312,6 +305,7 @@ int main( int argc, char* args[] )
         } else {
             spawnEnemies(enemyManager, renderer, pathThree, pathLengthThree, wave, elapsedTime);
         }
+        
         updateEnemies(enemyManager, elapsed, &playerMoney, elapsedTime, &playerHealth);
         renderEnemies(enemyManager, renderer);
 
@@ -399,7 +393,7 @@ int main( int argc, char* args[] )
                                     turrets[numTurrets].renderPosition.w = 150; 
                                     turrets[numTurrets].renderPosition.h = 150;
                                     turrets[numTurrets].range = 150; 
-                                    turrets[numTurrets].damage = 40;
+                                    turrets[numTurrets].damage = 30;
                                     turrets[numTurrets].shootCooldown = 500;
                                     turrets[numTurrets].lastShotTime = 0;
                                     turrets[numTurrets].upgradeLevel = 0; 

@@ -29,12 +29,13 @@ void freeEnemyManager(EnemyManager* manager) {
         }
     }
     free(manager->enemies);
+    manager->enemies = NULL;
     free(manager);
 }
 
 // spawning enemies
 void spawnEnemies(EnemyManager* manager, SDL_Renderer* renderer, SDL_Point* path, int pathLength, int wave, double elapsedTime) {
-    int totalEnemiesToSpawn = 5 + wave * 2;
+    int totalEnemiesToSpawn = 5 + wave * 3;
     if (manager->waveActive && manager->enemiesSpawned < totalEnemiesToSpawn && elapsedTime >= manager->nextSpawnTime) {
         // difficulty
         int enemyHP = 100 + (wave * 5);
@@ -89,8 +90,12 @@ void updateEnemies(EnemyManager* manager, double deltaTime, int* playerMoney, do
             }
 
             SDL_DestroyTexture(enemy->image);
-            free(enemy);
-            manager->enemies[i] = NULL;
+            for (int i = 0; i < manager->activeEnemies; i++) {
+                if (manager->enemies[i]->hp <= 0) {
+                    removeEnemy(manager, i);
+                    i--;
+                }
+            }
             *playerMoney += 10;
             continue;
         }
@@ -108,11 +113,28 @@ void updateEnemies(EnemyManager* manager, double deltaTime, int* playerMoney, do
     manager->activeEnemies = index;
 }
 
-// Rendering the enemies
+
 void renderEnemies(EnemyManager* manager, SDL_Renderer* renderer) {
     for (int i = 0; i < manager->activeEnemies; i++) {
         if (manager->enemies[i] != NULL) {
             renderEnemy(renderer, manager->enemies[i]);
         }
+    }
+}
+
+void removeEnemy(EnemyManager* manager, int index) {
+    if (manager->enemies[index] != NULL) {
+        if (manager->enemies[index]->image != NULL) {
+            SDL_DestroyTexture(manager->enemies[index]->image);
+            manager->enemies[index]->image = NULL;
+        }
+        free(manager->enemies[index]);
+        manager->enemies[index] = NULL;
+
+        for (int i = index; i < manager->activeEnemies - 1; i++) {
+            manager->enemies[i] = manager->enemies[i + 1];
+        }
+        manager->enemies[manager->activeEnemies - 1] = NULL;
+        manager->activeEnemies--;
     }
 }

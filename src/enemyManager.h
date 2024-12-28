@@ -25,4 +25,6 @@ void updateEnemies(EnemyManager* manager, double deltaTime, int* playerMoney, do
 
 void renderEnemies(EnemyManager* manager, SDL_Renderer* renderer);
 
+void removeEnemy(EnemyManager* manager, int index);
+
 #endif
