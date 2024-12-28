@@ -6,7 +6,7 @@ OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC_FILES))
 OBJ_NAME = main
 INCLUDE_PATH = -I include/SDL2 -I include/SDL2_image -I include/SDL2_ttf
 LIBRARY_PATH = -L lib/SDL2 -L lib/SDL2_image -L lib/SDL2_ttf
-COMPILER_FLAGS = -std=c99 -pedantic -Wall -g
+COMPILER_FLAGS = -std=c99 -pedantic -Wall -g -fsanitize=address
 LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
 
 all:	$(BUILD_DIR) $(BUILD_DIR)/$(OBJ_NAME)
