@@ -31,7 +31,7 @@ void freeEnemyManager(EnemyManager* manager) {
 // spawning enemies
 void spawnEnemies(EnemyManager* manager, SDL_Renderer* renderer, SDL_Point* path, int pathLength, int wave, double elapsedTime) {
     int totalEnemiesToSpawn = 5 + wave * 2;
-    if (manager->waveActive && manager->activeEnemies <= totalEnemiesToSpawn && elapsedTime >= manager->nextSpawnTime) {
+    if (manager->waveActive && manager->enemiesSpawned < totalEnemiesToSpawn && elapsedTime >= manager->nextSpawnTime) {
         // difficulty
         int enemyHP = 100 + (wave * 5);
         int enemySpeed = 2 + (wave * 0.3);
@@ -42,6 +42,7 @@ void spawnEnemies(EnemyManager* manager, SDL_Renderer* renderer, SDL_Point* path
         if (enemy) {
             enemy->speed = enemySpeed;
             enemy->hp = enemyHP;
+            manager->enemiesSpawned++;
             manager->enemies[manager->activeEnemies++] = enemy;
         }
 
@@ -49,7 +50,7 @@ void spawnEnemies(EnemyManager* manager, SDL_Renderer* renderer, SDL_Point* path
         manager->nextSpawnTime = elapsedTime + 1000;
         
     }
-    if (manager->activeEnemies == totalEnemiesToSpawn) {
+    if (manager->enemiesSpawned >= totalEnemiesToSpawn) {
         manager->waveActive = false;
         manager->waveCooldown = elapsedTime + 5000;
     }
@@ -73,6 +74,7 @@ void updateEnemies(EnemyManager* manager, double deltaTime, int* playerMoney, do
         }
         //out of HP
         if (enemy->hp <= 0) {
+            //manager->activeEnemies--;
             if (numTextEffects < 10) {
                 sprintf(textEffects[numTextEffects].text, "+10");
                 textEffects[numTextEffects].position = (SDL_Rect){enemy->x, enemy->y - 20, 30, 20};

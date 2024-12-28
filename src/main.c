@@ -17,7 +17,7 @@
 SDL_Rect turretSpots[] = {
     {400, 200, 25, 25}, 
     {200, 440, 25, 25}, 
-    {550, 450, 25, 25}, 
+    {570, 430, 25, 25}, 
     {650, 710, 25, 25}
 };
 int numClickableSpots = sizeof(turretSpots) / sizeof(turretSpots[0]);
@@ -149,6 +149,23 @@ void renderGameOver(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_RenderPresent(renderer);
 }
 
+void renderVictoryScreen(SDL_Renderer* renderer, TTF_Font* font) {
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black background
+    SDL_RenderClear(renderer);
+
+    SDL_Color green = {0, 255, 0}; 
+    SDL_Surface* victorySurface = TTF_RenderText_Blended(font, "YOU WON!", green);
+    SDL_Texture* victoryTexture = SDL_CreateTextureFromSurface(renderer, victorySurface);
+    SDL_Rect victoryRect = {200, 300, 600, 200}; 
+    SDL_RenderCopy(renderer, victoryTexture, NULL, &victoryRect);
+
+    SDL_FreeSurface(victorySurface);
+    SDL_DestroyTexture(victoryTexture);
+
+    SDL_RenderPresent(renderer); 
+}
+
 
 
 int playerMoney = 100;
@@ -158,6 +175,8 @@ int numTextEffects = 0;
 bool inMenu = true;
 bool gameOver = false;
 double gameOverStartTime = 0;
+bool gameWon = false; 
+double gameWonStartTime = 0; 
 
 
 
@@ -182,14 +201,17 @@ int main( int argc, char* args[] )
 
     SDL_Window* window = SDL_CreateWindow("Placeholder name", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer  = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Texture* heartTexture = IMG_LoadTexture(renderer, "../../src/Assets/playerHealthHeart.png");
+    SDL_Texture* backgroundImage = IMG_LoadTexture(renderer, "../../src/Assets/backgroundVersTwo.png");
+    SDL_Texture* turretTexture = IMG_LoadTexture(renderer, "../../src/Assets/towerTowerDefense.png");
     int run = 1;
-    int wave = 1;
+    int wave = 0;
     int playerHealth = 100;
     double elapsedTime = 0;
     SDL_Event event;
     //Enemy *enemyTest = NULL;
     EnemyManager* enemyManager = createEnemyManager(50);
-    SDL_Rect turrets[5];
+    Turret turrets[5];
     int numTurrets = 0;
     //** promena pro deltaTime
     //**
@@ -222,6 +244,15 @@ int main( int argc, char* args[] )
             renderMenu(renderer, font);
         } else {
 
+            if (gameWon) {
+                renderVictoryScreen(renderer, font);
+                double now = SDL_GetPerformanceCounter();
+                if (((now - gameWonStartTime) / SDL_GetPerformanceFrequency()) > 3.0) {
+                    run = 0;
+                }
+                continue;
+            }
+
             if(gameOver){
                 renderGameOver(renderer, font);
                 double now = SDL_GetPerformanceCounter();
@@ -237,9 +268,6 @@ int main( int argc, char* args[] )
         elapsedTime += elapsed * 1000;   
 
         SDL_RenderClear(renderer);
-        SDL_Texture* heartTexture = IMG_LoadTexture(renderer, "../../src/Assets/playerHealthHeart.png");
-        SDL_Texture* backgroundImage = IMG_LoadTexture(renderer, "../../src/Assets/backgroundVersTwo.png");
-        SDL_Texture* turretTexture = IMG_LoadTexture(renderer, "../../src/Assets/towerTowerDefense.png");
         SDL_Rect backgroundRect = {0, 0, windowWidth, windowHeight};
         SDL_RenderCopy(renderer, backgroundImage, NULL, &backgroundRect);
 
@@ -248,7 +276,8 @@ int main( int argc, char* args[] )
 
         SDL_Color white = {255, 255, 255};
         char hpText[20];
-        sprintf(hpText, "%d", playerHealth);
+        snprintf(hpText, sizeof(hpText), "%d", playerHealth);
+
 
         SDL_Surface* hpSurface = TTF_RenderText_Blended(font, hpText, white);
         SDL_Texture* hpTexture = SDL_CreateTextureFromSurface(renderer, hpSurface);
@@ -268,30 +297,41 @@ int main( int argc, char* args[] )
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); 
             SDL_RenderDrawRect(renderer, &turretSpots[i]);
         }
-
+        //render turrets
         for (int i = 0; i < numTurrets; i++) {
-            SDL_Rect dstRect = {turrets[i].x - 60, turrets[i].y - 75, 150, 150};
-            SDL_RenderCopy(renderer, turretTexture, NULL, &dstRect);
+            SDL_RenderCopy(renderer, turrets[i].texture, NULL, &turrets[i].renderPosition);
         }
 
 
+
         //spawn a update enemy
-        spawnEnemies(enemyManager, renderer, pathOne, pathLengthOne, wave, elapsedTime);
+        if(wave <= 2) {
+            spawnEnemies(enemyManager, renderer, pathOne, pathLengthOne, wave, elapsedTime);
+        }else if(wave == 3) {
+            spawnEnemies(enemyManager, renderer, pathTwo, pathLengthTwo, wave, elapsedTime);
+        } else {
+            spawnEnemies(enemyManager, renderer, pathThree, pathLengthThree, wave, elapsedTime);
+        }
         updateEnemies(enemyManager, elapsed, &playerMoney, elapsedTime, &playerHealth);
         renderEnemies(enemyManager, renderer);
 
 
         //render money
         char moneyText[20];
-        sprintf(moneyText, "Money: %d", playerMoney);
+        snprintf(moneyText, sizeof(moneyText),"Money: %d", playerMoney);
         SDL_Surface* moneySurface = TTF_RenderText_Blended(font, moneyText, white);
         SDL_Texture* moneyTexture = SDL_CreateTextureFromSurface(renderer, moneySurface);
         SDL_Rect moneyRect = {10, 10, moneySurface->w, moneySurface->h};
         SDL_RenderCopy(renderer, moneyTexture, NULL, &moneyRect);
         SDL_FreeSurface(moneySurface);
         SDL_DestroyTexture(moneyTexture);
-
-
+        //render wave
+        char waveText[20];
+        sprintf(waveText, "Wave: %d", wave);
+        SDL_Surface* waveSurface = TTF_RenderText_Blended(font, waveText, white);
+        SDL_Texture* waveTexture = SDL_CreateTextureFromSurface(renderer, waveSurface);
+        SDL_Rect waveRect = {10, 40, waveSurface->w, waveSurface->h}; // Positioned below the money
+        SDL_RenderCopy(renderer, waveTexture, NULL, &waveRect);
         for (int i = 0; i < numTextEffects; i++) {
             if (elapsedTime - textEffects[i].startTime < textEffects[i].duration) {
                 SDL_Surface* effectSurface = TTF_RenderText_Blended(font, textEffects[i].text, textEffects[i].color);
@@ -300,7 +340,6 @@ int main( int argc, char* args[] )
                 SDL_FreeSurface(effectSurface);
                 SDL_DestroyTexture(effectTexture);
             } else {
-                // Remove expired text effect
                 for (int j = i; j < numTextEffects - 1; j++) {
                     textEffects[j] = textEffects[j + 1];
                 }
@@ -311,17 +350,8 @@ int main( int argc, char* args[] )
 
 
         for (int i = 0; i < numTurrets; i++) {
-            Turret turret = {
-                .position = turrets[i],
-                .range = 150,            
-                .damage = 1,   
-                .shootCooldown = 1000, 
-                .lastShotTime = 0,
-            };
-
-            shootEnemies(&turret, enemyManager, renderer, elapsedTime);
+            shootEnemies(&turrets[i], enemyManager, renderer, elapsedTime);
         }
-
 
         SDL_RenderPresent(renderer);
 
@@ -330,7 +360,15 @@ int main( int argc, char* args[] )
             wave++;     
             enemyManager->waveActive = true;
             enemyManager->nextSpawnTime = 0;
-            elapsedTime = 0; 
+            enemyManager->enemiesSpawned = 0;
+            elapsedTime = 0;
+            turrets->lastShotTime = 0;
+            for (int i = 0; i < numTurrets; i++) {
+                turrets[i].lastShotTime = turrets[i].shootCooldown;
+            }
+            for (int i = 0; i < numTextEffects; i++) {
+                textEffects[i].duration = 0;
+            }
         }
 
         // event catcher
@@ -342,11 +380,40 @@ int main( int argc, char* args[] )
                 case SDL_MOUSEBUTTONDOWN: {
                     int x = event.button.x;
                     int y = event.button.y;
-                    for (int i = 0; i < numClickableSpots; i++) {
-                        if (SDL_PointInRect(&(SDL_Point){x, y}, &turretSpots[i])) {
-                            if (numTurrets < 5 && playerMoney >= turretCost) {
-                                turrets[numTurrets++] = turretSpots[i];
-                                playerMoney -= turretCost; 
+                    bool turretUpgraded = false;
+                    for (int i = 0; i < numTurrets; i++) {
+                        if (SDL_PointInRect(&(SDL_Point){x, y}, &turrets[i].position)) {
+                        upgradeTurret(&turrets[i], &playerMoney, renderer);
+                        turretUpgraded = true;
+                        break;
+                    }
+                    }
+
+                    if(!turretUpgraded){
+                        for (int i = 0; i < numClickableSpots; i++) {
+                            if (SDL_PointInRect(&(SDL_Point){x, y}, &turretSpots[i])) {
+                                if (numTurrets < 50 && playerMoney >= turretCost) {
+                                    turrets[numTurrets].position = turretSpots[i];
+                                    turrets[numTurrets].renderPosition.x = turretSpots[i].x - 60;
+                                    turrets[numTurrets].renderPosition.y = turretSpots[i].y - 70;
+                                    turrets[numTurrets].renderPosition.w = 150; 
+                                    turrets[numTurrets].renderPosition.h = 150;
+                                    turrets[numTurrets].range = 150; 
+                                    turrets[numTurrets].damage = 40;
+                                    turrets[numTurrets].shootCooldown = 500;
+                                    turrets[numTurrets].lastShotTime = 0;
+                                    turrets[numTurrets].upgradeLevel = 0; 
+
+                                    SDL_Surface* tempSurface = IMG_Load("../../src/Assets/towerBasic.png");
+                                    if (tempSurface) {
+                                        turrets[numTurrets].texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
+                                        SDL_FreeSurface(tempSurface);
+                                    }
+
+                                    numTurrets++;
+                                    playerMoney -= turretCost; 
+                                }
+
                             }
                         }
                     }
@@ -357,12 +424,26 @@ int main( int argc, char* args[] )
             }
         }
             if (playerHealth <= 0 && !gameOver) {
-            gameOver = true;
-            gameOverStartTime = SDL_GetPerformanceCounter(); 
-        }
+                gameOver = true;
+                gameOverStartTime = SDL_GetPerformanceCounter(); 
+            }
+            if (wave > 5 && !gameWon) {
+                gameWon = true; 
+                gameWonStartTime = SDL_GetPerformanceCounter();
+            }
+
         }
 
     }
+    for (int i = 0; i < numTurrets; i++) {
+        if (turrets[i].texture) {
+            SDL_DestroyTexture(turrets[i].texture);
+        }
+    }
+
+    SDL_DestroyTexture(backgroundImage);
+    SDL_DestroyTexture(heartTexture);
+    SDL_DestroyTexture(turretTexture);
     TTF_CloseFont(font);
     TTF_Quit();
     freeEnemyManager(enemyManager);

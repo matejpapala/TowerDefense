@@ -9,6 +9,7 @@ typedef struct {
     int maxEnemies; 
     int activeEnemies; 
     int nextSpawnTime; 
+    int enemiesSpawned;
     double waveCooldown;
     bool waveActive;
 } EnemyManager;
