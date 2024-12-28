@@ -20,8 +20,12 @@ EnemyManager* createEnemyManager(int maxEnemies) {
 void freeEnemyManager(EnemyManager* manager) {
     for (int i = 0; i < manager->maxEnemies; i++) {
         if (manager->enemies[i] != NULL) {
-            SDL_DestroyTexture(manager->enemies[i]->image);
-            free(manager->enemies[i]);
+            if (manager->enemies[i]->image != NULL) {
+                    SDL_DestroyTexture(manager->enemies[i]->image);
+                    manager->enemies[i]->image = NULL;
+                }
+                free(manager->enemies[i]);
+                manager->enemies[i] = NULL;
         }
     }
     free(manager->enemies);
