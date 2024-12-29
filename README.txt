@@ -4,7 +4,7 @@ kod v mainu je +- okomenotvany a jakztakz rozdeleny na asti ktere spolu souvisi,
 knihovny jsou nalinkovane do /include a do /lib a makefile by mel zajistit funkcnost kompilace
 jako compiler flag jsem pouzival address sanitizer a do terminalu mi nevyhodil zadny problem a bez odmlouvani zkompiloval
 program je psan a testovan na Mac OS
-pro nejjednodussi kompilaci jsem pouzival taky .json soubory, ktere prikladam a tim padem jde kod zkompilovat kliknutim jednoho tlacitak ve vscode
+pro nejjednodussi kompilaci jsem pouzival taky .json soubory, ktere prikladam a tim padem jde kod zkompilovat kliknutim jednoho tlacitak ve vscode s pouzitim extensionu pro C/C++
 
 KE HRE:
 na vyznacena policka muzete postavit vez, ktera stoji 50 minci
