@@ -430,8 +430,9 @@ int main( int argc, char* args[] )
 
     }
     for (int i = 0; i < numTurrets; i++) {
-        if (turrets[i].texture) {
+        if (turrets[i].texture != NULL) {
             SDL_DestroyTexture(turrets[i].texture);
+            turrets[i].texture = NULL;
         }
     }
 
