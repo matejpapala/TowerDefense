@@ -4,6 +4,18 @@
 //
 //  Created by Matěj Papala on 21.11.2024.
 //
+
+
+
+
+
+
+//CELY PROJEKT NA https://github.com/matejpapala/TowerDefense
+
+
+
+
+
 #include <SDL2/SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
